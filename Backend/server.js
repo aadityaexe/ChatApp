@@ -5,6 +5,8 @@ import http from "http";
 import { connect } from "http2";
 import { connectDB } from "./Lib/db.js";
 
+import userRouter from "./routes/userRouts.js";
+
 // create express app and http server
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +20,7 @@ app.use("/api/status", (req, res) => {
   res.send("server is live");
 });
 
+app.use("/api/auth", userRouter);
 //  connect to the MongoDB database
 
 await connectDB();
