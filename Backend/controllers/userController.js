@@ -1,9 +1,8 @@
+import cloudinary from "../Lib/cloudinary.js";
+import { generateToken } from "../Lib/utils.js";
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
 // Singup a new user
-
-import { generateToken } from "../Lib/utils";
-import User from "../models/User";
-import User from "../models/User";
-
 export const signup = async (req, res) => {
   const { email, fullName, password, bio } = req.body;
   try {
@@ -74,6 +73,59 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error("Error during login:", error.message);
     res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//  controller to check if user i authenticated
+
+export const checkAuth = (req, res) => {
+  res.json({
+    success: true,
+    user: req.user,
+  });
+};
+
+// controller to update user profile details
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic, fullName, bio } = req.body;
+    const userId = req.user._id;
+
+    let updateUser;
+
+    if (!profilePic) {
+      updateUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          fullName,
+          bio,
+        },
+        { new: true }
+      );
+    } else {
+      const upload = await cloudinary.uploader.upload(profilePic);
+      updateUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          fullName,
+          bio,
+          profilePic: upload.secure_url,
+        },
+        { new: true }
+      );
+    }
+
+    res.json({
+      success: true,
+      user: updateUser,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.json({
       success: false,
       message: error.message,
     });
