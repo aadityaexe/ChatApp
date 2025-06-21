@@ -1,0 +1,48 @@
+// Singup a new user
+
+import { generateToken } from "../Lib/utils";
+import User from "../models/User";
+import User from "../models/User";
+
+export const signup = async (req, res) => {
+  const { email, fullName, password, bio } = req.body;
+  try {
+    if (!email || !fullName || !password || !bio) {
+      return res.json({
+        success: false,
+        message: "missing details",
+      });
+    }
+    const User = await User.findOne({ email });
+    if (User) {
+      return res.json({
+        success: false,
+        message: "Account already exists",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const newUser = new User({
+      fullName,
+      email,
+      password: hashedPassword,
+      bio,
+    });
+
+    const token = generateToken(newUser._id);
+
+    res.json({
+      success: true,
+      userData: newUser,
+      token,
+      message: "Account created successfully",
+    });
+  } catch (error) {
+    console.error("Error during signup:", error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
