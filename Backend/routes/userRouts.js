@@ -9,7 +9,8 @@ import { protectRoute } from "../middleware/Auth.js";
 
 const userRouter = express.Router();
 
-userRouter.post("/signuo", signup);
+userRouter.post("/signup", signup);
+
 userRouter.post("/login", login);
 userRouter.put("/update-profile", protectRoute, updateProfile);
 userRouter.get("/check-auth", protectRoute, checkAuth);

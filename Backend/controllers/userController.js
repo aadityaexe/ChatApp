@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 // Singup a new user
 export const signup = async (req, res) => {
-  const { email, fullName, password, bio } = req.body;
+  const { fullName, email, password, bio } = req.body;
   try {
     if (!email || !fullName || !password || !bio) {
       return res.json({
@@ -12,8 +12,8 @@ export const signup = async (req, res) => {
         message: "missing details",
       });
     }
-    const User = await User.findOne({ email });
-    if (User) {
+    const user = await User.findOne({ email });
+    if (user) {
       return res.json({
         success: false,
         message: "Account already exists",
@@ -22,7 +22,7 @@ export const signup = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const newUser = new User({
+    const newUser = await User.create({
       fullName,
       email,
       password: hashedPassword,
@@ -33,7 +33,7 @@ export const signup = async (req, res) => {
 
     res.json({
       success: true,
-      userData,
+      userData: newUser,
       token,
       message: "Account created successfully",
     });
@@ -55,6 +55,7 @@ export const login = async (req, res) => {
     const userData = await User.findOne({ email });
 
     const isPasswordCorrect = await bcrypt.compare(password, userData.password);
+
     if (!isPasswordCorrect) {
       return res.json({
         success: false,
@@ -62,7 +63,7 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = generateToken(newUser._id);
+    const token = generateToken(userData._id);
 
     res.json({
       success: true,
