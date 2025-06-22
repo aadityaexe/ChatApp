@@ -1,15 +1,18 @@
 import express from "express";
-import { protectRoute } from "../middleware/Auth";
+import { protectRoute } from "../middleware/Auth.js";
 import {
   getMessages,
   getUsersForSidebar,
   markMessagesAsSeen,
-} from "../controllers/massageController";
+  sendMessage,
+} from "../controllers/massageController.js";
 
 const massageRouter = express.Router();
 
 massageRouter.get("/user", protectRoute, getUsersForSidebar);
 massageRouter.get("/:id", protectRoute, getMessages);
-massageRouter.get("mark/:id", protectRoute, markMessagesAsSeen);
+massageRouter.put("mark/:id", protectRoute, markMessagesAsSeen);
+
+massageRouter.post("/send/:id", protectRoute, sendMessage);
 
 export default massageRouter;
