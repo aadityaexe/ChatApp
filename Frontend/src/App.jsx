@@ -24,7 +24,7 @@ const App = () => {
         <Route
           path="/profile"
           element={
-            <div>{!authUser ? <ProfilePage /> : <Navigate to="/login" />}</div>
+            <div>{authUser ? <ProfilePage /> : <Navigate to="/login" />}</div>
           }
         />
       </Routes>
