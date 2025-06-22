@@ -6,7 +6,7 @@ import { connect } from "http2";
 import { connectDB } from "./Lib/db.js";
 import userRouter from "./routes/userRouts.js";
 import massageRouter from "./routes/massageRouts.js";
-import { Server, server } from "socket.io";
+import { Server } from "socket.io";
 // create express app and http server
 const app = express();
 const server = http.createServer(app);
