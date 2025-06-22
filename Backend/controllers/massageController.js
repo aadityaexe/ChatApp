@@ -39,3 +39,38 @@ export const getUsersForSidebar = async (req, res) => {
     });
   }
 };
+
+// get all massages for selected user
+
+export const getMessages = async (req, res) => {
+  try {
+    const { id: selectedUserId } = req.user._id;
+    const myId = req.user._id;
+
+    // find all messages between the logged in user and the selected user
+    const messages = await Message.find({
+      $or: [
+        { senderId: myId, receiverId: selectedUserId },
+        { senderId: selectedUserId, receiverId: myId },
+      ],
+    }).sort({ createdAt: 1 });
+
+    // mark all messages as seen
+    await Message.updateMany({
+      senderId: selectedUserId,
+      receiverId: myId,
+      seen: true,
+    });
+
+    res.json({
+      success: true,
+      messages,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
