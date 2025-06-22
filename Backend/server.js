@@ -6,6 +6,7 @@ import { connect } from "http2";
 import { connectDB } from "./Lib/db.js";
 
 import userRouter from "./routes/userRouts.js";
+import massageRouter from "./routes/massageRouts.js";
 
 // create express app and http server
 const app = express();
@@ -21,6 +22,8 @@ app.use("/api/status", (req, res) => {
 });
 
 app.use("/api/auth", userRouter);
+
+app.use("/api/messages", massageRouter);
 //  connect to the MongoDB database
 
 await connectDB();
