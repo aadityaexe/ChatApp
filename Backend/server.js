@@ -4,13 +4,41 @@ import cors from "cors";
 import http from "http";
 import { connect } from "http2";
 import { connectDB } from "./Lib/db.js";
-
 import userRouter from "./routes/userRouts.js";
 import massageRouter from "./routes/massageRouts.js";
-
+import { Server, server } from "socket.io";
 // create express app and http server
 const app = express();
 const server = http.createServer(app);
+
+// initialize socket.io server
+
+export const io = new Server(server, { cors: { origin: "*" } });
+
+//  store online users
+
+export const userSocketMap = {}; //{userId: socketId  }
+
+// handle socket.io connections
+
+io.on("connection", (socket) => {
+  const { userId } = socket.handshake.query;
+
+  console.log("user connection: " + userId);
+  if (userId) {
+    userSocketMap[userId] = socket.id;
+  }
+
+  //  Emit online users to all connected clients
+  io.emit("online-users", Object.keys(userSocketMap));
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected: " + userId);
+    delete userSocketMap[userId];
+    // Emit online users to all connected clients
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  });
+});
 
 // middleware setup
 
