@@ -74,3 +74,24 @@ export const getMessages = async (req, res) => {
     });
   }
 };
+
+//  api to mark massages as seen using the message id
+
+export const markMessagesAsSeen = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const message = await Message.findByIdAndUpdate(id, { seen: true });
+
+    res.json({
+      success: true,
+      message: "Message marked as seen",
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
