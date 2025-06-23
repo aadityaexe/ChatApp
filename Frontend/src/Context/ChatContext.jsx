@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { createContext, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import toast from "react-hot-toast";
@@ -7,7 +7,7 @@ export const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
-  const [user, setUser] = useState([]);
+  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const [unseenMessages, setUnseenMessages] = useState([]);
@@ -21,7 +21,7 @@ export const ChatProvider = ({ children }) => {
       const { data } = await axios.get("/api/messages/users");
 
       if (data.success) {
-        setUser(data.user);
+        setUsers(data.user);
         setUnseenMessages(data.unseenMessages);
       }
     } catch (error) {
@@ -83,6 +83,30 @@ export const ChatProvider = ({ children }) => {
     });
   };
 
-  const value = {};
+  // function to unsubscribe from messages
+
+  const unsubscribeFromMessages = () => {
+    if (socket) socket.off("newMessage");
+  };
+
+  useEffect(() => {
+    subscribeToMessages();
+
+    return () => {
+      unsubscribeFromMessages();
+    };
+  }, [socket, selectedUser]);
+
+  const value = {
+    messages,
+    users,
+    selectedUser,
+    getUser,
+    setMessages,
+    sendMessage,
+    setSelectedUser,
+    unseenMessages,
+    setUnseenMessages,
+  };
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
