@@ -16,7 +16,7 @@ export const ChatProvider = ({ children }) => {
 
   // function to get all users for sidebar
 
-  const getUser = async () => {
+  const getUsers = async () => {
     try {
       const { data } = await axios.get("/api/messages/users");
 
@@ -101,12 +101,13 @@ export const ChatProvider = ({ children }) => {
     messages,
     users,
     selectedUser,
-    getUser,
+    getUsers,
     setMessages,
     sendMessage,
     setSelectedUser,
     unseenMessages,
     setUnseenMessages,
+    getMessages,
   };
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
