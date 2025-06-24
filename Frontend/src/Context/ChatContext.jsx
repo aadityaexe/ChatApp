@@ -21,7 +21,7 @@ export const ChatProvider = ({ children }) => {
       const { data } = await axios.get("/api/messages/users");
 
       if (data.success) {
-        setUsers(data.user);
+        setUsers(data.users);
         setUnseenMessages(data.unseenMessages);
       }
     } catch (error) {
@@ -47,7 +47,7 @@ export const ChatProvider = ({ children }) => {
 
   const sendMessage = async (messageData) => {
     try {
-      const { data } = await axios.get(
+      const { data } = await axios.post(
         `/api/messages/send/${selectedUser._id}`,
         messageData
       );
