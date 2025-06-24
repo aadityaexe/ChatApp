@@ -9,7 +9,7 @@ import {
 
 const massageRouter = express.Router();
 
-massageRouter.get("/user", protectRoute, getUsersForSidebar);
+massageRouter.get("/users", protectRoute, getUsersForSidebar);
 massageRouter.get("/:id", protectRoute, getMessages);
 massageRouter.put("mark/:id", protectRoute, markMessagesAsSeen);
 
