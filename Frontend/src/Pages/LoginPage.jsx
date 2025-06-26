@@ -36,7 +36,7 @@ const LoginPage = () => {
       {/* Right */}
       <form
         onSubmit={onSubmitHandler}
-        className="border-2 border-gray-500 rounded-lg p-6 bg-white shadow-lg flex flex-col gap-6"
+        className="border-2 border-gray-500 rounded-lg p-6 bg-gray-600 shadow-lg flex flex-col gap-6"
       >
         <h2 className="font-medium text-2xl flex justify-between items-center">
           {currState}
@@ -87,7 +87,7 @@ const LoginPage = () => {
             onChange={(e) => setBio(e.target.value)}
           />
         )}
-        <button className="py-3 bg-gradient-to-r from-purple-400 to-violet-600 text-white cursor-pointer rounded-md">
+        <button className="py-3 bg-gradient-to-r from-gray-400 to-gray-600 text-white cursor-pointer rounded-md">
           {currState === "Sign up" ? "Create Account" : "Login Now"}
         </button>
         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -103,7 +103,7 @@ const LoginPage = () => {
                   setCurrState("Login");
                   setIsDataSubmitted(false);
                 }}
-                className="font-medium text-violet-500 cursor-pointer"
+                className="font-medium text-red-500  cursor-pointer"
               >
                 Login
               </span>
@@ -116,9 +116,9 @@ const LoginPage = () => {
                   setCurrState("Sign up");
                   setIsDataSubmitted(false);
                 }}
-                className="font-medium text-violet-500 cursor-pointer"
+                className="font-medium text-red-500 cursor-pointer"
               >
-                Click here
+                Login
               </span>
             </p>
           )}
