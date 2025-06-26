@@ -25,7 +25,7 @@ export const ChatProvider = ({ children }) => {
         setUnseenMessages(data.unseenMessages);
       }
     } catch (error) {
-      toast.error(error.messages);
+      toast.error(error.message);
     }
   };
 
@@ -39,7 +39,7 @@ export const ChatProvider = ({ children }) => {
         setMessages(data.messages);
       }
     } catch (error) {
-      toast.error(error.messages);
+      toast.error(error.message);
     }
   };
 
@@ -53,12 +53,12 @@ export const ChatProvider = ({ children }) => {
       );
 
       if (data.success) {
-        setMessages((prevMessages) => [...prevMessages, data.messages]);
+        setMessages((prevMessages) => [...prevMessages, data.message]);
       } else {
-        toast.error(data.messages);
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.messages);
+      toast.error(error.message);
     }
   };
 
@@ -71,7 +71,7 @@ export const ChatProvider = ({ children }) => {
       if (selectedUser && newMessages.senderId === selectedUser._id) {
         newMessages.seen = true;
         setMessages((prevMessages) => [...prevMessages, newMessages]);
-        axios.put(`/api/messages/mark/${newMessages._id}`);
+        axios.put(`/api/messages/mark/${newMessages._id}`, { seen: true });
       } else {
         setUnseenMessages((prevUnseenMessages) => ({
           ...prevUnseenMessages,
