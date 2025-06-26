@@ -1,27 +1,27 @@
 // get all users except the logged in user
 import cloudinary from "../Lib/cloudinary.js";
-import Message from "../models/Massage.js";
+import Message from "../models/Message.js";
 import User from "../models/User.js";
 import { io, userSocketMap } from "../server.js";
 
 export const getUsersForSidebar = async (req, res) => {
   try {
-    const usersId = req.user._id;
-    const filteredUsers = await User.find({ _id: { $ne: usersId } }).select(
+    const userId = req.user._id;
+    const filteredUsers = await User.find({ _id: { $ne: userId } }).select(
       "-password"
     );
 
     //  count unseen messages for each user
     const unseenMessages = {};
 
-    constpromises = filteredUsers.map(async (user) => {
+    const promises = filteredUsers.map(async (user) => {
       const messages = await Message.find({
         senderId: user._id,
-        receiverId: usersId,
+        receiverId: userId,
         seen: false,
       });
       if (messages.length > 0) {
-        unseenMessages[User._id] = messages.length;
+        unseenMessages[user._id] = messages.length;
       }
     });
 
@@ -33,7 +33,7 @@ export const getUsersForSidebar = async (req, res) => {
       unseenMessages,
     });
   } catch (error) {
-    console.log(error.Message);
+    console.log(error.message);
     res.json({
       success: false,
       message: error.message,
@@ -45,7 +45,7 @@ export const getUsersForSidebar = async (req, res) => {
 
 export const getMessages = async (req, res) => {
   try {
-    const { id: selectedUserId } = req.user._id;
+    const { id: selectedUserId } = req.params;
     const myId = req.user._id;
 
     // find all messages between the logged in user and the selected user
@@ -57,11 +57,16 @@ export const getMessages = async (req, res) => {
     }).sort({ createdAt: 1 });
 
     // mark all messages as seen
-    await Message.updateMany({
-      senderId: selectedUserId,
-      receiverId: myId,
-      seen: true,
-    });
+    await Message.updateMany(
+      {
+        senderId: selectedUserId,
+        receiverId: myId,
+        seen: false,
+      },
+      {
+        $set: { seen: true }, // ✅ second parameter required
+      }
+    );
 
     res.json({
       success: true,
@@ -82,7 +87,7 @@ export const markMessagesAsSeen = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const message = await Message.findByIdAndUpdate(id, { seen: true });
+    await Message.findByIdAndUpdate(id, { seen: true });
 
     res.json({
       success: true,
@@ -105,7 +110,7 @@ export const sendMessage = async (req, res) => {
     const receiverId = req.params.id;
     const senderId = req.user._id;
 
-    let imageUrl = null;
+    let imageUrl;
     if (image) {
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
@@ -115,7 +120,7 @@ export const sendMessage = async (req, res) => {
       senderId,
       receiverId,
       text,
-      image: imageUrl,
+      image: imageUrl || "",
     });
 
     // Emit the new message to the receiver's socket

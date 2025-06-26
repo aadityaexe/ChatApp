@@ -1,7 +1,20 @@
-import React from "react";
-import assets, { imagesDummyData } from "../assets/assets";
+import React, { useContext, useEffect, useState } from "react";
+import assets from "../assets/assets";
+import { ChatContext } from "../Context/ChatContext";
+import { AuthContext } from "../Context/AuthContext";
 
-const RightSidebar = ({ selectedUser }) => {
+const RightSidebar = () => {
+  const { selectedUser, messages } = useContext(ChatContext);
+  const { logout, onlineUsers } = useContext(AuthContext);
+
+  const [msgImages, setMsgImages] = useState([]);
+
+  //  get all the images from messages
+
+  useEffect(() => {
+    setMsgImages(messages.filter((msg) => msg.image).map((msg) => msg.image));
+  }, [messages]);
+
   return (
     selectedUser && (
       <div
@@ -16,7 +29,9 @@ const RightSidebar = ({ selectedUser }) => {
             alt=""
           />
           <h1 className="gap-2 px-10 text-xl font-medium mx-auto flex items-center">
-            <p className=" w-2 h-2 rounded-full bg-green-500"></p>
+            {onlineUsers.includes(selectedUser._id) && (
+              <p className=" w-2 h-2 rounded-full bg-green-500"></p>
+            )}
             {selectedUser.fullName}
           </h1>
           <p className="px-10 mx-auto">{selectedUser.bio}</p>
@@ -25,7 +40,7 @@ const RightSidebar = ({ selectedUser }) => {
         <div className="px-5 text-xs">
           <p>Media</p>
           <div className="mt-2 max-h-[200px] overflow-y-scroll grid grid-cols-2 gap-4 opacity-80">
-            {imagesDummyData.map((url, index) => (
+            {msgImages.map((url, index) => (
               <div
                 key={index}
                 onClick={() => window.open(url)}
@@ -37,6 +52,7 @@ const RightSidebar = ({ selectedUser }) => {
           </div>
         </div>
         <button
+          onClick={logout}
           className="absolute
 bottom-5
 left-1/2

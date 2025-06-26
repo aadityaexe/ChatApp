@@ -5,13 +5,13 @@ import {
   getUsersForSidebar,
   markMessagesAsSeen,
   sendMessage,
-} from "../controllers/massageController.js";
+} from "../controllers/messageController.js";
 
 const massageRouter = express.Router();
 
-massageRouter.get("/user", protectRoute, getUsersForSidebar);
+massageRouter.get("/users", protectRoute, getUsersForSidebar);
 massageRouter.get("/:id", protectRoute, getMessages);
-massageRouter.put("mark/:id", protectRoute, markMessagesAsSeen);
+massageRouter.put("/mark/:id", protectRoute, markMessagesAsSeen);
 
 massageRouter.post("/send/:id", protectRoute, sendMessage);
 
