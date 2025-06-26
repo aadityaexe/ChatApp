@@ -55,9 +55,14 @@ app.use("/api/messages", massageRouter);
 
 await connectDB();
 
-const PORT = process.env.PORT || 5000;
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
 
-// start the server
-server.listen(PORT, () => {
-  console.log("Server is running on port: " + PORT);
-});
+  // start the server
+  server.listen(PORT, () => {
+    console.log("Server is running on port: " + PORT);
+  });
+}
+
+// export the server for versel
+export default server;
