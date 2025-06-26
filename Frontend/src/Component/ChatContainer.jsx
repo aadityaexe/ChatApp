@@ -48,7 +48,7 @@ const ChatContainer = () => {
     }
   }, [messages]);
   return selectedUser ? (
-    <div className="w-full overflow-scroll relative backdrop-blur-lg">
+    <div className="w-full overflow-scroll relative bg-[#818582]/40 backdrop-blur-lg">
       {/* header */}
       <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
         <img
@@ -86,7 +86,7 @@ const ChatContainer = () => {
               />
             ) : (
               <p
-                className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-violet-500/30 text-white ${
+                className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-violet-200/30 text-black ${
                   msg.senderId !== authUser._id
                     ? "rounded-br-none"
                     : "rounded-bl-none"
