@@ -30,7 +30,7 @@ const Sidebar = () => {
   }, [onlineUsers]);
   return (
     <div
-      className={`bg-[#818582]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${
+      className={`bg-[#818582]/70 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${
         selectedUser ? "max-md-hidden" : ""
       }`}
     >
@@ -91,9 +91,9 @@ const Sidebar = () => {
             <div className="flex flex-col leading-5">
               <p>{user.fullName}</p>
               {onlineUsers.includes(user._id) ? (
-                <span className="text-green-400 text-sm">Onine</span>
+                <span className="text-green-400 text-sm ">Onine</span>
               ) : (
-                <span className="text-neutral-400 text-sm">Offline</span>
+                <span className="text-black text-sm">Offline</span>
               )}
             </div>
             {unseenMessages[user._id] > 0 && (
