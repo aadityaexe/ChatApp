@@ -18,7 +18,7 @@ const RightSidebar = () => {
   return (
     selectedUser && (
       <div
-        className={`overflow-y-scroll bg-[#818582]/10 text-white w-full relative ${
+        className={`overflow-y-scroll bg-[#818582]/60 text-black text-2xl w-full relative ${
           selectedUser ? "max-md:hidden" : ""
         }`}
       >
@@ -58,9 +58,7 @@ bottom-5
 left-1/2
 transform
 -translate-x-1/2
-bg-gradient-to-r
-from-purple-400
-to-violet-600
+bg-gradient-to-r from-gray-400 to-gray-600
 text-white
 border-none
 text-sm
