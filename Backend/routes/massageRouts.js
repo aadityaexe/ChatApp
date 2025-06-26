@@ -1,5 +1,5 @@
 import express from "express";
-import { protectRoute } from "../middleware/Auth.js";
+import { protectRoute } from "../middleware/auth.js";
 import {
   getMessages,
   getUsersForSidebar,
