@@ -206,8 +206,8 @@ Contributions are welcome! Follow these steps:
 **Aditya Kumar**
 
 * GitHub: [@aadityaexe](https://github.com/aadityaexe)
-* LinkedIn: *(Add your link)*
-* Twitter: *(Optional)*
+* LinkedIn: [*(Add your link)*](https://www.linkedin.com/in/aditya-kumar-1187a0265/)
+* Twitter: [*(Optional)*](https://x.com/Aadityakumar_01)
 
 ---
 
