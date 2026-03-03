@@ -60,6 +60,20 @@ io.on("connection", (socket) => {
       io.to(targetSocketId).emit("callEnded");
     }
   });
+
+  socket.on("typing", ({ senderId, receiverId }) => {
+    const receiverSocketId = userSocketMap[receiverId];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("userTyping", { senderId });
+    }
+  });
+
+  socket.on("stopTyping", ({ senderId, receiverId }) => {
+    const receiverSocketId = userSocketMap[receiverId];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("userStopTyping", { senderId });
+    }
+  });
   // -----------------------------------------
 
   socket.on("disconnect", () => {

@@ -78,6 +78,12 @@ export const getMessages = async (req, res) => {
           $set: { seen: true },
         }
       );
+
+      // Notify the sender that we read their messages
+      const targetSocketId = userSocketMap[selectedId];
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("messagesSeen", { byUserId: myId });
+      }
     }
 
     res.json({
@@ -178,5 +184,53 @@ export const sendMessage = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+// delete message
+
+export const deleteMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const message = await Message.findById(id);
+
+    if (!message) {
+      return res.json({ success: false, message: "Message not found" });
+    }
+
+    if (message.senderId.toString() !== userId.toString()) {
+      return res.json({ success: false, message: "Unauthorized to delete this message" });
+    }
+
+    const receiverId = message.receiverId;
+    const groupId = message.groupId;
+
+    await Message.findByIdAndDelete(id);
+
+    if (groupId) {
+       const group = await Group.findById(groupId);
+       if(group) {
+          group.members.forEach((memberId) => {
+            if (memberId.toString() !== userId.toString()) {
+              const socketId = userSocketMap[memberId.toString()];
+              if (socketId) {
+                io.to(socketId).emit("messageDeleted", { messageId: id });
+              }
+            }
+          });
+       }
+    } else if (receiverId) {
+       const receiverSocketId = userSocketMap[receiverId];
+       if (receiverSocketId) {
+         io.to(receiverSocketId).emit("messageDeleted", { messageId: id });
+       }
+    }
+
+    res.json({ success: true, message: "Message deleted successfully", deletedId: id });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success: false, message: error.message });
   }
 };

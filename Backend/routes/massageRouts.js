@@ -5,6 +5,7 @@ import {
   getUsersForSidebar,
   markMessagesAsSeen,
   sendMessage,
+  deleteMessage,
 } from "../controllers/messageController.js";
 
 const massageRouter = express.Router();
@@ -14,5 +15,6 @@ massageRouter.get("/:id", protectRoute, getMessages);
 massageRouter.put("/mark/:id", protectRoute, markMessagesAsSeen);
 
 massageRouter.post("/send/:id", protectRoute, sendMessage);
+massageRouter.delete("/delete/:id", protectRoute, deleteMessage);
 
 export default massageRouter;

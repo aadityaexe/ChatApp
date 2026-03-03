@@ -7,9 +7,9 @@ import { CallContext } from "../Context/CallContext";
 import toast from "react-hot-toast";
 
 const ChatContainer = () => {
-  const { selectedUser, isGroupChat, setSelectedUser, messages, sendMessage, getMessages } =
+  const { selectedUser, isGroupChat, setSelectedUser, messages, sendMessage, getMessages, typingUsers, deleteMessage } =
     useContext(ChatContext);
-  const { authUser, onlineUsers } = useContext(AuthContext);
+  const { authUser, onlineUsers, socket } = useContext(AuthContext);
   const { callUser } = useContext(CallContext);
   const scrollEnd = useRef(null);
 
@@ -47,7 +47,17 @@ const ChatContainer = () => {
     if (scrollEnd.current && messages) {
       scrollEnd.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, typingUsers]);
+
+  useEffect(() => {
+    if (input && socket && selectedUser && !isGroupChat) {
+      socket.emit("typing", { senderId: authUser._id, receiverId: selectedUser._id });
+      const timeoutId = setTimeout(() => {
+        socket.emit("stopTyping", { senderId: authUser._id, receiverId: selectedUser._id });
+      }, 2000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [input, socket, selectedUser, authUser, isGroupChat]);
 
   return selectedUser ? (
     <div className="w-full h-full flex flex-col relative bg-transparent overflow-hidden border-x border-gray-200">
@@ -129,7 +139,16 @@ const ChatContainer = () => {
             </div>
 
             {/* Message Content */}
-            <div className={`flex flex-col max-w-[70%] xl:max-w-[60%] ${isMine ? "items-end" : "items-start"}`}>
+            <div className={`flex flex-col max-w-[70%] xl:max-w-[60%] relative group ${isMine ? "items-end" : "items-start"}`}>
+              {isMine && (
+                 <button 
+                    onClick={() => deleteMessage(msg._id)}
+                    className="absolute top-1/2 -translate-y-1/2 -left-12 p-2 text-red-500 bg-white shadow-md border border-red-100 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 hover:bg-red-50 scale-90 hover:scale-100"
+                    title="Delete Message"
+                 >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                 </button>
+              )}
               
               {isGroupChat && !isMine && (
                 <span className="text-[11px] font-medium text-gray-500 mb-1 ml-1 px-2 py-0.5 bg-gray-200/50 rounded-full">
@@ -153,14 +172,35 @@ const ChatContainer = () => {
                 </div>
               )}
               
-              {/* Timestamp */}
-              <span className={`text-[10px] text-gray-400 mt-1 ${isMine ? "mr-2" : "ml-2"}`}>
-                {formatMassageDate(msg.createdAt)}
-              </span>
+              {/* Timestamp & Seen Indicator */}
+              <div className={`flex items-center gap-1 mt-1 ${isMine ? "mr-2" : "ml-2"}`}>
+                <span className="text-[10px] text-gray-400">
+                  {formatMassageDate(msg.createdAt)}
+                </span>
+                {isMine && !isGroupChat && (
+                  <span className={`text-[10px] ${msg.seen ? "text-blue-500 font-bold" : "text-gray-400 font-medium"}`}>
+                    {msg.seen ? "✓✓" : "✓"}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           );
         })}
+
+        {typingUsers?.includes(selectedUser?._id) && !isGroupChat && (
+          <div className="flex items-end gap-3 flex-row">
+            <div className="shrink-0 mb-6">
+               <img src={selectedUser.profilePic || assets.avatar_icon} className="w-8 h-8 object-cover rounded-full border border-gray-200 shadow-sm" />
+            </div>
+            <div className="bg-white border border-gray-200 rounded-[1.5rem] rounded-bl-[0.25rem] px-5 py-4 shadow-sm flex items-center gap-1.5 h-10">
+               <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
+               <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+               <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+            </div>
+          </div>
+        )}
+
         <div ref={scrollEnd} className="h-4"></div>
       </div>
 

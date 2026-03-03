@@ -12,6 +12,7 @@ export const ChatProvider = ({ children }) => {
   const [selectedUser, setSelectedUser] = useState(null); // Can be a user or a group
   const [isGroupChat, setIsGroupChat] = useState(false); // Flag for group chat
   const [unseenMessages, setUnseenMessages] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]); // This stores typing users IDs
   
   // Friend System states
   const [friendRequests, setFriendRequests] = useState([]);
@@ -138,6 +139,20 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
+  const deleteMessage = async (messageId) => {
+    try {
+      const { data } = await axios.delete(`/api/messages/delete/${messageId}`);
+      if (data.success) {
+        setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== messageId));
+        toast.success("Message deleted");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+       toast.error(error.message);
+    }
+  };
+
   // function to subscribe to messages for selected user
 
   const subscribeToMessages = async () => {
@@ -182,6 +197,17 @@ export const ChatProvider = ({ children }) => {
       getUsers();
     });
 
+    socket.on("userTyping", ({ senderId }) => {
+      setTypingUsers((prev) => {
+        if (!prev.includes(senderId)) return [...prev, senderId];
+        return prev;
+      });
+    });
+
+    socket.on("userStopTyping", ({ senderId }) => {
+       setTypingUsers((prev) => prev.filter(id => id !== senderId));
+    });
+
     // Group listeners
     socket.on("newGroupCreated", (group) => {
       setGroups((prev) => [...prev, group]);
@@ -201,6 +227,18 @@ export const ChatProvider = ({ children }) => {
         setIsGroupChat(false);
       }
     });
+
+    socket.on("messagesSeen", ({ byUserId }) => {
+      setMessages((prev) => 
+        prev.map(msg => 
+          msg.receiverId === byUserId ? { ...msg, seen: true } : msg
+        )
+      );
+    });
+
+    socket.on("messageDeleted", ({ messageId }) => {
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    });
   };
 
   const unsubscribeFromMessages = () => {
@@ -212,6 +250,10 @@ export const ChatProvider = ({ children }) => {
       socket.off("newGroupCreated");
       socket.off("groupUpdated");
       socket.off("removedFromGroup");
+      socket.off("userTyping");
+      socket.off("userStopTyping");
+      socket.off("messagesSeen");
+      socket.off("messageDeleted");
     }
   };
   useEffect(() => {
@@ -248,6 +290,8 @@ export const ChatProvider = ({ children }) => {
     sendFriendRequest,
     respondToRequest,
     createGroup,
+    typingUsers,
+    deleteMessage,
   };
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
