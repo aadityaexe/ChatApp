@@ -2,18 +2,22 @@
 import cloudinary from "../Lib/cloudinary.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
+import Group from "../models/Group.js";
 import { io, userSocketMap } from "../server.js";
 
 export const getUsersForSidebar = async (req, res) => {
   try {
     const userId = req.user._id;
-    const filteredUsers = await User.find({ _id: { $ne: userId } }).select(
-      "-password"
-    );
+    
+    // Fetch user and populate friends
+    const currentUser = await User.findById(userId).populate("friends", "-password");
+    let filteredUsers = currentUser.friends || [];
 
-    //  count unseen messages for each user
+    // Also fetch groups the user belongs to
+    const groups = await Group.find({ members: userId }).populate("members", "-password");
+
+    //  count unseen messages for each user (1-on-1)
     const unseenMessages = {};
-
     const promises = filteredUsers.map(async (user) => {
       const messages = await Message.find({
         senderId: user._id,
@@ -30,6 +34,7 @@ export const getUsersForSidebar = async (req, res) => {
     res.json({
       success: true,
       users: filteredUsers,
+      groups: groups,
       unseenMessages,
     });
   } catch (error) {
@@ -45,28 +50,35 @@ export const getUsersForSidebar = async (req, res) => {
 
 export const getMessages = async (req, res) => {
   try {
-    const { id: selectedUserId } = req.params;
+    const { id: selectedId } = req.params; // Can be a userId or groupId
     const myId = req.user._id;
 
-    // find all messages between the logged in user and the selected user
-    const messages = await Message.find({
-      $or: [
-        { senderId: myId, receiverId: selectedUserId },
-        { senderId: selectedUserId, receiverId: myId },
-      ],
-    }).sort({ createdAt: 1 });
+    // Check if it's a group
+    const isGroup = await Group.findById(selectedId);
+    
+    let messages;
+    
+    if (isGroup) {
+      messages = await Message.find({ groupId: selectedId }).sort({ createdAt: 1 }).populate("senderId", "fullName profilePic");
+    } else {
+      messages = await Message.find({
+        $or: [
+          { senderId: myId, receiverId: selectedId },
+          { senderId: selectedId, receiverId: myId },
+        ],
+      }).sort({ createdAt: 1 });
 
-    // mark all messages as seen
-    await Message.updateMany(
-      {
-        senderId: selectedUserId,
-        receiverId: myId,
-        seen: false,
-      },
-      {
-        $set: { seen: true }, // ✅ second parameter required
-      }
-    );
+      await Message.updateMany(
+        {
+          senderId: selectedId,
+          receiverId: myId,
+          seen: false,
+        },
+        {
+          $set: { seen: true },
+        }
+      );
+    }
 
     res.json({
       success: true,
@@ -106,8 +118,8 @@ export const markMessagesAsSeen = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
-    const receiverId = req.params.id;
+    const { text, image, isGroup } = req.body;
+    const targetId = req.params.id; // Either receiverId or groupId
     const senderId = req.user._id;
 
     let imageUrl;
@@ -116,22 +128,50 @@ export const sendMessage = async (req, res) => {
       imageUrl = uploadResponse.secure_url;
     }
 
-    const newMessage = await Message.create({
-      senderId,
-      receiverId,
-      text,
-      image: imageUrl || "",
-    });
-
-    // Emit the new message to the receiver's socket
-    const receiverSocketId = userSocketMap[receiverId];
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
+    let newMessage;
+    
+    if (isGroup) {
+      newMessage = await Message.create({
+        senderId,
+        groupId: targetId,
+        text,
+        image: imageUrl || "",
+      });
+      
+      const populatedMsg = await Message.findById(newMessage._id).populate("senderId", "fullName profilePic");
+      const group = await Group.findById(targetId);
+      
+      if (group) {
+        group.members.forEach((memberId) => {
+          // Don't emit to self (handled by React state usually, but socket can emit to everyone)
+          if (memberId.toString() !== senderId.toString()) {
+            const socketId = userSocketMap[memberId.toString()];
+            if (socketId) {
+              io.to(socketId).emit("newGroupMessage", populatedMsg);
+            }
+          }
+        });
+        group.lastMessage = newMessage._id;
+        await group.save();
+      }
+      
+      return res.json({ success: true, message: populatedMsg });
+      
+    } else {
+      newMessage = await Message.create({
+        senderId,
+        receiverId: targetId,
+        text,
+        image: imageUrl || "",
+      });
+      
+      const receiverSocketId = userSocketMap[targetId];
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newMessage", newMessage);
+      }
+      res.json({ success: true, message: newMessage });
     }
-    res.json({
-      success: true,
-      message: newMessage,
-    });
+    
   } catch (error) {
     console.log(error.message);
     res.json({

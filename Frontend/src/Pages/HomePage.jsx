@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import Sidebar from "../Component/Sidebar";
 import ChatContainer from "../Component/ChatContainer";
 import RightSidebar from "../Component/RightSidebar";
+import CallScreen from "../Component/CallScreen";
 import { ChatContext } from "../Context/ChatContext";
 
 const HomePage = () => {
@@ -20,6 +21,7 @@ const HomePage = () => {
         <ChatContainer />
         <RightSidebar />
       </div>
+      <CallScreen />
     </div>
   );
 };

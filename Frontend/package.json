@@ -12,12 +12,24 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.10.0",
+    "buffer": "^6.0.3",
+    "dup": "^1.0.0",
+    "duplexify": "^4.1.3",
+    "events": "^3.3.0",
+    "inherits": "^2.0.4",
+    "process": "^0.11.10",
+    "qs": "^6.15.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
     "react-router-dom": "^7.6.2",
+    "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.1",
-    "tailwindcss": "^4.1.10"
+    "stream-browserify": "^3.0.0",
+    "string_decoder": "^1.3.0",
+    "tailwindcss": "^4.1.10",
+    "url": "^0.11.4",
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
@@ -28,6 +40,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-plugin-node-polyfills": "^0.25.0"
   }
 }
