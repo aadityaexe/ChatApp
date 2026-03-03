@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { CallContext } from "../Context/CallContext";
 import assets from "../assets/assets";
 
@@ -14,7 +14,14 @@ const CallScreen = () => {
     userVideo,
     answerCall,
     leaveCall,
+    stream
   } = useContext(CallContext);
+
+  useEffect(() => {
+    if (myVideo.current && stream) {
+      myVideo.current.srcObject = stream;
+    }
+  }, [isCalling, callAccepted, stream, myVideo]);
 
   // If not receiving a call and not actively calling, don't render anything
   if (!receivingCall && !isCalling && !callAccepted) return null;

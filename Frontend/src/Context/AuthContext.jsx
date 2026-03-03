@@ -77,6 +77,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const changePassword = async (body) => {
+    try {
+      const { data } = await axios.put("/api/auth/change-password", body);
+      if (data.success) {
+        toast.success(data.message);
+        return true;
+      } else {
+        toast.error(data.message);
+        return false;
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+      return false;
+    }
+  };
+
   const connectSocket = (userData) => {
     if (!userData || socket?.connected) return;
     const newSocket = io(backendUrl, {
@@ -108,6 +124,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateProfile,
+    changePassword,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

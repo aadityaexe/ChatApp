@@ -30,7 +30,7 @@ io.on("connection", (socket) => {
   }
 
   //  Emit online users to all connected clients
-  io.emit("online-users", Object.keys(userSocketMap));
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   // --- WebRTC Video/Audio Call Signaling ---
   socket.on("callUser", ({ userToCall, signalData, from, name, profilePic }) => {

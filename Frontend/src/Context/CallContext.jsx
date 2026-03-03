@@ -14,6 +14,7 @@ export const CallProvider = ({ children }) => {
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
+  const [calledUser, setCalledUser] = useState("");
   
   const myVideo = useRef();
   const userVideo = useRef();
@@ -75,9 +76,16 @@ export const CallProvider = ({ children }) => {
 
   const executeCall = (idToCall, currentStream) => {
     setIsCalling(true);
+    setCalledUser(idToCall);
     const peer = new Peer({
       initiator: true,
       trickle: false,
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:global.stun.twilio.com:3478" }
+        ]
+      },
       stream: currentStream,
     });
 
@@ -122,6 +130,12 @@ export const CallProvider = ({ children }) => {
     const peer = new Peer({
       initiator: false,
       trickle: false,
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:global.stun.twilio.com:3478" }
+        ]
+      },
       stream: currentStream,
     });
 
@@ -144,7 +158,7 @@ export const CallProvider = ({ children }) => {
     if(connectionRef.current) {
         connectionRef.current.destroy();
     }
-    socket.emit("endCall", { to: caller || isCalling }); // Hacky way to handle 'to' if not caller, will need to track called ID
+    socket.emit("endCall", { to: caller || calledUser });
     cleanupCall();
   };
 
@@ -152,6 +166,7 @@ export const CallProvider = ({ children }) => {
       setReceivingCall(false);
       setCallAccepted(false);
       setIsCalling(false);
+      setCalledUser("");
       setCaller("");
       setCallerName("");
       setCallerPic("");

@@ -9,12 +9,16 @@ const HomePage = () => {
   const { selectedUser } = useContext(ChatContext);
 
   return (
-    <div className="border w-full h-screen sm:px-[15%] sm:py-[5%]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden sm:px-8 sm:py-8 h-screen">
+      {/* Decorative Light Background Elements */}
+      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-100/50 rounded-bl-full blur-[80px] pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-indigo-100/50 rounded-tr-full blur-[80px] pointer-events-none"></div>
+
       <div
-        className={`backdrop-blur-xl border-2 border-gray-600 rounded-2xl overflow-hidden h-[100%] grid grid-cols-1 relative ${
+        className={`w-full max-w-7xl h-full bg-white border border-gray-200 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden grid grid-cols-1 relative z-10 ${
           selectedUser
             ? "md:grid-cols-[1fr_1.5fr_1fr] xl:grid-cols-[1fr_2fr_1fr]"
-            : "md:grid-cols-2"
+            : "md:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_2fr]"
         } `}
       >
         <Sidebar />

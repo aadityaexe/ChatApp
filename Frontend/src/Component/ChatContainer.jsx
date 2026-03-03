@@ -15,20 +15,18 @@ const ChatContainer = () => {
 
   const [input, setInput] = useState("");
 
-  //Handle sending a message
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (input.trim() === "") return null;
+    if (input.trim() === "") return;
     await sendMessage({ text: input.trim() });
     setInput("");
   };
 
-  //Handle sending a image
-
   const handleSendImage = async (e) => {
     const file = e.target.files[0];
     if (!file || !file.type.startsWith("image/")) {
-      toast.error("select an image file");
+      toast.error("Please select an image file");
+      return;
     }
     const reader = new FileReader();
 
@@ -44,153 +42,178 @@ const ChatContainer = () => {
       getMessages(selectedUser._id);
     }
   }, [selectedUser]);
+
   useEffect(() => {
     if (scrollEnd.current && messages) {
       scrollEnd.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
   return selectedUser ? (
-    <div className="w-full overflow-scroll relative bg-[#818582]/40 backdrop-blur-lg">
-      {/* header */}
-      <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
-        <div className="relative">
+    <div className="w-full h-full flex flex-col relative bg-transparent overflow-hidden border-x border-gray-200">
+      {/* Header */}
+      <div className="flex items-center gap-4 py-4 px-6 border-b border-gray-200 bg-white/80 backdrop-blur-md shrink-0">
+        <div className="relative shrink-0">
           {isGroupChat ? (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex justify-center items-center text-lg font-bold shadow-inner ring-2 ring-gray-700 overflow-hidden text-white">
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex justify-center items-center text-xl font-bold border border-blue-200 overflow-hidden text-blue-700">
                {selectedUser.groupImage ? <img src={selectedUser.groupImage} className="w-full h-full object-cover"/> : selectedUser.name.charAt(0).toUpperCase()}
             </div>
           ) : (
-            <img
-              src={selectedUser.profilePic || assets.avatar_icon}
-              alt=""
-              className="w-10 h-10 object-cover rounded-full ring-2 ring-gray-700"
-            />
+            <div className="relative">
+               <img
+                 src={selectedUser.profilePic || assets.avatar_icon}
+                 alt="Profile"
+                 className="w-12 h-12 object-cover rounded-full border border-gray-200 shadow-sm"
+               />
+               {onlineUsers.includes(selectedUser._id) && (
+                 <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
+               )}
+            </div>
           )}
         </div>
         
-        <div className="flex-1 min-w-0">
-           <p className="text-lg text-white flex items-center gap-2 font-medium truncate">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+           <h2 className="text-xl text-gray-800 font-bold tracking-tight truncate">
             {isGroupChat ? selectedUser.name : selectedUser.fullName}
-            {!isGroupChat && onlineUsers.includes(selectedUser._id) && (
-              <span className="w-2 h-2 rounded-full bg-green-500 mt-1"></span>
-            )}
+           </h2>
+           <p className="text-sm text-blue-600 font-medium truncate">
+             {isGroupChat 
+               ? `${selectedUser.members.length} members` 
+               : (onlineUsers.includes(selectedUser._id) ? "Online now" : "Offline")}
            </p>
-           {isGroupChat && <p className="text-xs text-gray-400">{selectedUser.members.length} members</p>}
         </div>
 
-        {/* Video Call Button (Only for 1-on-1 for now) */}
-        {!isGroupChat && (
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 shrink-0">
+          {!isGroupChat && (
+            <button 
+              onClick={() => callUser(selectedUser._id)}
+              className="p-3 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-all duration-200"
+              title="Video Call"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+              </svg>
+            </button>
+          )}
           <button 
-            onClick={() => callUser(selectedUser._id)}
-            className="p-2 bg-indigo-500/20 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition"
-            title="Video Call"
+            onClick={() => setSelectedUser(null)}
+            className="p-3 md:hidden bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 transition"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
-        )}
-        <img
-          src={assets.arrow_icon}
-          alt=""
-          className="md:hidden max-w-7"
-          onClick={() => setSelectedUser(null)}
-        />
-        <img src={assets.help_icon} alt="" className="max-md:hidden max-w-5" />
+        </div>
       </div>
-      {/* chat area */}
-      <div className="flex flex-col h-[calc(100%-120px)] overflow-y-scroll p-3 pb-6">
-        {messages.map((msg, index) => (
+
+      {/* Chat Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar scroll-smooth bg-gray-50/30">
+        {messages.map((msg, index) => {
+          const isMine = msg.senderId === authUser._id;
+          
+          return (
           <div
             key={index}
-            className={`flex items-end gap-2 justify-end ${
-              msg.senderId !== authUser._id && "flex-row-reverse"
-            }`}
+            className={`flex items-end gap-3 ${isMine ? "flex-row-reverse" : "flex-row"}`}
           >
-            {msg.image ? (
-              <div className="flex flex-col mb-8">
-                 {isGroupChat && msg.senderId !== authUser._id && (
-                    <p className="text-[10px] text-gray-400 ml-1 mb-1">{msg.senderId?.fullName || "User"}</p>
-                 )}
-                 <img
-                  src={msg.image}
-                  className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden"
-                 />
-              </div>
-            ) : (
-              <div className="flex flex-col mb-8">
-                {isGroupChat && msg.senderId !== authUser._id && (
-                    <p className="text-[10px] text-gray-400 ml-1 mb-1">{msg.senderId?.fullName || "User"}</p>
-                 )}
-                <p
-                  className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg break-all ${
-                    msg.senderId === authUser._id
-                      ? "bg-indigo-600 text-white rounded-br-none"
-                      : "bg-gray-800 text-gray-200 rounded-bl-none border border-gray-700"
+            {/* Avatar */}
+            <div className="shrink-0 mb-6">
+              <img
+                src={isMine 
+                  ? authUser?.profilePic || assets.avatar_icon 
+                  : (msg.senderId?.profilePic || assets.avatar_icon)}
+                alt="Avatar"
+                className="w-8 h-8 object-cover rounded-full border border-gray-200 shadow-sm"
+              />
+            </div>
+
+            {/* Message Content */}
+            <div className={`flex flex-col max-w-[70%] xl:max-w-[60%] ${isMine ? "items-end" : "items-start"}`}>
+              
+              {isGroupChat && !isMine && (
+                <span className="text-[11px] font-medium text-gray-500 mb-1 ml-1 px-2 py-0.5 bg-gray-200/50 rounded-full">
+                  {msg.senderId?.fullName || "User"}
+                </span>
+              )}
+
+              {msg.image ? (
+                <div className="relative group overflow-hidden rounded-2xl border border-gray-200 shadow-sm mb-1 mt-1">
+                  <img src={msg.image} className="max-w-[250px] md:max-w-[300px] hover:scale-[1.02] transition-transform duration-300" />
+                </div>
+              ) : (
+                <div 
+                  className={`px-5 py-3 shadow-sm ${
+                    isMine
+                      ? "bg-blue-600 text-white rounded-[1.5rem] rounded-br-[0.25rem]"
+                      : "bg-white text-gray-800 border border-gray-200 rounded-[1.5rem] rounded-bl-[0.25rem]"
                   }`}
                 >
-                  {msg.text}
-                </p>
-              </div>
-            )}
-
-            <div className=" text-center text-xs pb-8 pl-1">
-              <img
-                src={
-                  msg.senderId === authUser._id
-                    ? authUser?.profilePic || assets.avatar_icon
-                    : (msg.senderId?.profilePic || assets.avatar_icon)
-                }
-                alt=""
-                className=" w-7 h-7 object-cover rounded-full ring-1 ring-gray-600"
-              />
-              <p className="text-gray-500 text-[9px] mt-1">
+                  <p className="text-[15px] leading-relaxed break-words">{msg.text}</p>
+                </div>
+              )}
+              
+              {/* Timestamp */}
+              <span className={`text-[10px] text-gray-400 mt-1 ${isMine ? "mr-2" : "ml-2"}`}>
                 {formatMassageDate(msg.createdAt)}
-              </p>
+              </span>
             </div>
           </div>
-        ))}
-        <div ref={scrollEnd}></div>
+          );
+        })}
+        <div ref={scrollEnd} className="h-4"></div>
       </div>
-      {/* bottem area */}
-      <div className="absolute flex bottom-0 left-0 right-0 items-center gap-3 p-3">
-        <div className="flex-1 flex items-center bg-gray-100/12 px-3  rounded-full">
+
+      {/* Message Input Area */}
+      <div className="p-4 md:px-6 md:py-5 border-t border-gray-200 bg-white/80 backdrop-blur-md shrink-0">
+        <form 
+          onSubmit={handleSendMessage}
+          className="flex items-center gap-3 w-full bg-gray-100 border border-gray-200 rounded-full px-2 py-2 shadow-sm focus-within:bg-white focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-400/20 transition-all"
+        >
+          <label htmlFor="image-upload" className="shrink-0 p-2 cursor-pointer hover:bg-gray-200 rounded-full transition-colors group">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <input
+              onChange={handleSendImage}
+              type="file"
+              id="image-upload"
+              accept="image/png, image/jpeg, image/webp"
+              className="hidden"
+            />
+          </label>
+          
           <input
             onChange={(e) => setInput(e.target.value)}
             value={input}
-            onKeyDown={(e) => {
-              e.key === "Enter" ? handleSendMessage(e) : null;
-            }}
             type="text"
-            placeholder="Send a message"
-            className="flex-1 text-sm p-3 border-none text-white placeholder-gray-400"
+            placeholder="Type a message..."
+            className="flex-1 bg-transparent border-none text-gray-800 placeholder-gray-500 focus:outline-none px-2 py-2"
           />
-          <input
-            onChange={handleSendImage}
-            type="file"
-            id="image"
-            accept="image/png , image/jpeg"
-            hidden
-          />
-          <label htmlFor="image">
-            <img
-              src={assets.gallery_icon}
-              alt=""
-              className="w-5 mr-2 cursor-pointer"
-            />
-          </label>
-        </div>
-        <img
-          onClick={handleSendMessage}
-          src={assets.send_button}
-          alt=""
-          className="w-7 cursor-pointer"
-        />
+          
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            className="shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white disabled:opacity-50 disabled:bg-gray-400 hover:bg-blue-700 transition-all duration-200 transform active:scale-95 shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+            </svg>
+          </button>
+        </form>
       </div>
     </div>
   ) : (
-    <div className="flex flex-col items-center justify-center gap-2 text-gray-500 bg-white/10 max-md:hidden">
-      <img src={assets.logo_icon} className="max-w-16" alt="" />
-      <p className="text-lg font-medium text-wite">Chat anytime, anywhere</p>
+    <div className="flex-col items-center justify-center gap-6 hidden md:flex h-full w-full bg-gray-50 border-x border-gray-200">
+      <div className="w-32 h-32 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+        </svg>
+      </div>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">NexusChat</h2>
+        <p className="text-gray-500 font-medium">Select a conversation or start a new one.</p>
+      </div>
     </div>
   );
 };

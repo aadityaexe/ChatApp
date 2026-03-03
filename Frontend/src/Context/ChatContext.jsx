@@ -219,7 +219,7 @@ export const ChatProvider = ({ children }) => {
     return () => {
       unsubscribeFromMessages();
     };
-  }, [socket, selectedUser]);
+  }, [socket, selectedUser, isGroupChat]);
 
   useEffect(() => {
     if(socket) {
