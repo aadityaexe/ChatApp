@@ -15,6 +15,8 @@ export const CallProvider = ({ children }) => {
   const [callEnded, setCallEnded] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
   const [calledUser, setCalledUser] = useState("");
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isVideoOff, setIsVideoOff] = useState(false);
   
   const myVideo = useRef();
   const userVideo = useRef();
@@ -170,10 +172,32 @@ export const CallProvider = ({ children }) => {
       setCaller("");
       setCallerName("");
       setCallerPic("");
+      setIsAudioMuted(false);
+      setIsVideoOff(false);
       if(stream) {
           stream.getTracks().forEach(track => track.stop());
           setStream(null);
       }
+  };
+
+  const toggleAudio = () => {
+    if (stream) {
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsAudioMuted(!audioTrack.enabled);
+      }
+    }
+  };
+
+  const toggleVideo = () => {
+    if (stream) {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOff(!videoTrack.enabled);
+      }
+    }
   };
 
   return (
@@ -191,7 +215,11 @@ export const CallProvider = ({ children }) => {
         caller,
         callerName,
         callerPic,
-        isCalling
+        isCalling,
+        isAudioMuted,
+        isVideoOff,
+        toggleAudio,
+        toggleVideo
       }}
     >
       {children}

@@ -10,6 +10,10 @@ const CallScreen = () => {
     callerName,
     callerPic,
     isCalling,
+    isAudioMuted,
+    isVideoOff,
+    toggleAudio,
+    toggleVideo,
     myVideo,
     userVideo,
     answerCall,
@@ -90,22 +94,67 @@ const CallScreen = () => {
 
             {/* My Video (Local) */}
             <div className={`relative aspect-video bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 shadow-xl transition-all duration-500 ${callAccepted ? 'w-1/3 md:absolute md:bottom-8 md:right-8 md:w-64 md:z-20' : 'w-full md:w-1/3'}`}>
-              <video playsInline muted ref={myVideo} autoPlay className="w-full h-full object-cover scale-x-[-1]" />
-              <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white">You</div>
+              <video playsInline muted ref={myVideo} autoPlay className={`w-full h-full object-cover scale-x-[-1] ${isVideoOff ? 'hidden' : 'block'}`} />
+              {isVideoOff && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-10">
+                   <img src={assets.avatar_icon} className="w-16 h-16 opacity-50 mb-2" />
+                   <p className="text-gray-400 text-xs text-center">Camera Off</p>
+                </div>
+              )}
+              <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white z-20">You {isAudioMuted && "(Muted)"}</div>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900/80 backdrop-blur-md px-8 py-4 rounded-full border border-gray-700 flex gap-6 shadow-2xl z-30">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900/80 backdrop-blur-md px-8 py-4 rounded-full border border-gray-700 flex gap-6 shadow-2xl z-30 items-center">
+             
+             {/* Mic Toggle */}
+             <button
+               onClick={toggleAudio}
+               className={`w-14 h-14 rounded-full flex justify-center items-center shadow-lg transition transform hover:scale-105 ${isAudioMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'}`}
+               title={isAudioMuted ? "Unmute" : "Mute"}
+             >
+               {isAudioMuted ? (
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                 </svg>
+               ) : (
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                 </svg>
+               )}
+             </button>
+
+             {/* End Call */}
              <button 
               onClick={leaveCall}
-              className="w-14 h-14 bg-red-500 hover:bg-red-600 rounded-full flex justify-center items-center shadow-lg transition transform hover:scale-105"
+              className="w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full flex justify-center items-center shadow-lg transition transform hover:scale-105"
               title="End Call"
              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white rotate-[135deg]" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white rotate-[135deg]" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                 </svg>
              </button>
+
+             {/* Video Toggle */}
+             <button
+               onClick={toggleVideo}
+               className={`w-14 h-14 rounded-full flex justify-center items-center shadow-lg transition transform hover:scale-105 ${isVideoOff ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'}`}
+               title={isVideoOff ? "Turn on camera" : "Turn off camera"}
+             >
+               {isVideoOff ? (
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+                   <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                 </svg>
+               ) : (
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+                   <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                 </svg>
+               )}
+             </button>
+
           </div>
         </div>
       )}
